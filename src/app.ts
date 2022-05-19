@@ -1,13 +1,6 @@
 import './main.scss';
 
-// esri config and auth
 import esriConfig from '@arcgis/core/config';
-
-// loading screen
-import LoadingScreen from './core/widgets/LoadingScreen';
-import DisclaimerModal from './core/widgets/DisclaimerModal';
-
-// map, view and layers
 import Map from '@arcgis/core/Map';
 import MapView from '@arcgis/core/views/MapView';
 import Basemap from '@arcgis/core/Basemap';
@@ -17,30 +10,28 @@ import { SimpleRenderer } from '@arcgis/core/renderers';
 import { SimpleFillSymbol, TextSymbol } from '@arcgis/core/symbols';
 import PopupTemplate from '@arcgis/core/PopupTemplate';
 import LabelClass from '@arcgis/core/layers/support/LabelClass';
-
 import { DateTime } from 'luxon';
-
-// layout
-import Viewer from './core/layouts/Viewer';
-
-// widgets
-import ViewControl from './core/widgets/ViewControl';
-import UIWidgetSwitcher from './core/widgets/UIWidgetSwitcher';
-import LayerListLegend from './core/widgets/LayerListLegend';
+import Layout from '@vernonia/core/dist/Layout';
+import '@vernonia/core/dist/Layout.css';
 
 // config portal and auth
-esriConfig.portalUrl = 'https://gisportal.vernonia-or.gov/portal';
+esriConfig.portalUrl = 'https://gis.vernonia-or.gov/portal';
 
 // app config and init loading screen
 const title = 'Vernonia Annexations';
 
-const loadingScreen = new LoadingScreen({
-  title,
+// basemaps
+const basemap = new Basemap({
+  portalItem: {
+    id: '6e9f78f3a26f48c89575941141fd4ac3',
+  },
 });
 
-if (!DisclaimerModal.isAccepted()) {
-  new DisclaimerModal({});
-}
+const nextBasemap = new Basemap({
+  portalItem: {
+    id: '2622b9aecacd401583981410e07d5bb9',
+  },
+});
 
 const annexations = new GeoJSONLayer({
   url: 'https://vernonia-annexation-documents.netlify.app/vernonia-annexations.geojson',
@@ -48,10 +39,10 @@ const annexations = new GeoJSONLayer({
   title: 'Annexations',
   renderer: new SimpleRenderer({
     symbol: new SimpleFillSymbol({
-      color: [255, 0, 0, 0.1],
+      color: [0, 0, 255, 0.1],
       outline: {
         style: 'solid',
-        color: 'red',
+        color: [0, 0, 255, 0.25],
         width: 1,
       },
     }),
@@ -59,7 +50,7 @@ const annexations = new GeoJSONLayer({
   labelingInfo: [
     new LabelClass({
       symbol: new TextSymbol({
-        color: 'red',
+        color: 'blue',
         haloColor: 'white',
         haloSize: 1,
         font: {
@@ -105,24 +96,20 @@ const annexations = new GeoJSONLayer({
 
 const cityLimits = new FeatureLayer({
   portalItem: {
-    id: 'eb0c7507611e44b7923dd1c0167e3b92',
+    id: '5e1e805849ac407a8c34945c781c1d54',
   },
 });
 
 const ugb = new FeatureLayer({
   portalItem: {
-    id: '2f760ba990ab4d6e831d04b85a8a0bf3',
+    id: '0df1d0d9f7aa45099881c6de540950c8',
   },
 });
 
 // view
 const view = new MapView({
   map: new Map({
-    basemap: new Basemap({
-      portalItem: {
-        id: 'f36cd213cc934d2391f58f389fc9eaec',
-      },
-    }),
+    basemap,
     layers: [annexations, ugb, cityLimits],
     ground: 'world-elevation',
   }),
@@ -140,30 +127,24 @@ const view = new MapView({
   },
 });
 
-new Viewer({
+// const info = document.createElement('calcite-panel');
+// info.setAttribute('style', 'border-radius: var(--calcite-border-radius);');
+// info.widthScale = 'm';
+// const content = document.createElement('div');
+// content.setAttribute('style', 'padding: 0.75rem;');
+// info.append(content);
+// content.innerHTML = ``;
+// view.ui.add(info, 'top-right');
+
+new Layout({
   view,
-  title,
-  includeSearch: false,
-});
-
-view.when(() => {
-  view.ui.add(new ViewControl({ view }), 'top-left');
-
-  view.ui.add(
-    new UIWidgetSwitcher({
-      widgetInfos: [
-        {
-          widget: new LayerListLegend({
-            view,
-            addFromWeb: false,
-          }),
-          text: 'Layers',
-          icon: 'layers',
-        }
-      ]
-    }),
-    'top-right',
-  );
-
-  loadingScreen.end();
+  loaderOptions: {
+    title,
+  },
+  includeDisclaimer: true,
+  mapHeadingOptions: {
+    title,
+    logoUrl: 'city_logo_small_white.svg',
+  },
+  nextBasemap,
 });
