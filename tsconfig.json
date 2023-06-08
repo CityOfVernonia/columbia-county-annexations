@@ -14,12 +14,10 @@
     "jsx": "react",
     "jsxFactory": "tsx",
     "types": [
-      "@esri/calcite-components",
-      "luxon"
+      "@esri/calcite-components"
     ]
   },
   "include": [
-    "src/**/*",
-    "./node_modules/@vernonia/core/interfaces.d.ts"
+    "src/**/*"
   ]
 }
